@@ -108,7 +108,7 @@ namespace DecagonConsumerPortal
 
                 int rowSaved = decagonDbEntities.SaveChanges();
                 
-
+                
                 if (rowSaved > 0)
                 {
                     lblMessage.Text = "Consumer Record updated Successfully";
@@ -124,7 +124,7 @@ namespace DecagonConsumerPortal
                 }
                 else
                 {
-                    lblMessage.Text = "Error while Updating Your Record";
+                    lblMessage.Text = "Error while Updating Your Record!";
                 }
 
             }
