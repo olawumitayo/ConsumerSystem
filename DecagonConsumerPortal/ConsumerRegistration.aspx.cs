@@ -12,22 +12,25 @@ namespace DecagonConsumerPortal
 {
     public partial class ConsumerRegistration : System.Web.UI.Page
     {
+        DecagonDbEntities decagonDbEntities=new DecagonDbEntities();
         string connectionString = ConfigurationManager.ConnectionStrings["db_connection"].ConnectionString;
          static string Id;
         protected void Page_Load(object sender, EventArgs e)
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            try
             {
-                string query = "select * from tbl_Consumer order by Id desc";
-                conn.Open();
-                SqlCommand cmd = new SqlCommand(query, conn);
-                SqlDataAdapter sda = new SqlDataAdapter(cmd);
-                DataSet ds = new DataSet();
-                sda.Fill(ds);
-                GridView1.DataSource = ds;
+               
+                 
+                GridView1.DataSource = decagonDbEntities.tbl_Consumer.OrderByDescending(o=>o.Id).ToList();
                 GridView1.DataBind();
-                conn.Close();
+                
             }
+            catch (Exception)
+            {
+
+                throw;
+            }
+           
         }
 
         protected void gv_SelectedIndexChanged(object sender, EventArgs e)
@@ -47,44 +50,37 @@ namespace DecagonConsumerPortal
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                var tblConsumer = new tbl_Consumer
                 {
-                    string query = "insert into tbl_Consumer(FirstName,LastName,DOB,BusinessType,State,Address,PhoneNo,Gender) " +
-                "values(@fName,@LName,@dob,@BusinessType,@State,@Address,@Phone,@Gender)";
-                    conn.Open();
-                    SqlCommand cmd = new SqlCommand(query,conn);
-                    cmd.Parameters.AddWithValue("@fName", txtFirstName.Text);
-                    cmd.Parameters.AddWithValue("@LName", txtLastName.Text);
-                    cmd.Parameters.AddWithValue("@dob", txtDOB.Text);
-                    cmd.Parameters.AddWithValue("@BusinessType",txtBusinessType.Text);
-                    cmd.Parameters.AddWithValue("@State", drpState.SelectedItem.ToString());
-                    cmd.Parameters.AddWithValue("@Address", txtAddress.Text);
+                     BusinessType= txtBusinessType.Text,
+                     Address= txtAddress.Text,
+                     DOB= txtDOB.Text,
+                     FirstName= txtFirstName.Text,
+                     LastName= txtLastName.Text,
+                     State= drpState.SelectedItem.ToString(),
+                     PhoneNo= txtPhone.Text,
+                     Gender= rdGender.Text
+                };
+                decagonDbEntities.tbl_Consumer.Add(tblConsumer);
+                int rowSaved=decagonDbEntities.SaveChanges();
+                if (rowSaved > 0)
+                {
+                    lblMessage.Text = "Consumer Record Saved Successfully";
 
-                    cmd.Parameters.AddWithValue("@Phone", txtPhone.Text);
-                    cmd.Parameters.AddWithValue("@Gender", rdGender.Text);
-
-                    int rowSaved=cmd.ExecuteNonQuery();
-                    conn.Close();
-                    if (rowSaved > 0)
-                    {
-                        lblMessage.Text = "Consumer Record Saved Successfully";
-
-                        txtFirstName.Text = "";
-                        txtLastName.Text = "";
-                        txtDOB.Text = "";
-                        txtBusinessType.Text = "";
-                        drpState.Text = "";
-                        txtAddress.Text = "";
-                        txtPhone.Text = ""; 
-                        rdGender.Text = "";
-                    }
-                    else
-                    {
-                        lblMessage.Text = "Error while Saving Your Record";
-                    }
-
+                    txtFirstName.Text = "";
+                    txtLastName.Text = "";
+                    txtDOB.Text = "";
+                    txtBusinessType.Text = "";
+                    drpState.Text = "";
+                    txtAddress.Text = "";
+                    txtPhone.Text = "";
+                    rdGender.Text = "";
                 }
-
+                else
+                {
+                    lblMessage.Text = "Error while Saving Your Record";
+                }
+            
                 
             }
             catch (Exception)
@@ -99,48 +95,43 @@ namespace DecagonConsumerPortal
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                int newId = Convert.ToInt32(Id);
+                var getRecord = decagonDbEntities.tbl_Consumer.Where(o => o.Id == newId).FirstOrDefault();
+                getRecord.BusinessType = txtBusinessType.Text;
+                getRecord.Address = txtAddress.Text;
+                getRecord.DOB = txtDOB.Text;
+                getRecord.FirstName = txtFirstName.Text;
+                getRecord.LastName = txtLastName.Text;
+                getRecord.State = drpState.SelectedItem.ToString();
+                getRecord.PhoneNo = txtPhone.Text;
+                getRecord.Gender = rdGender.Text;
+
+                int rowSaved = decagonDbEntities.SaveChanges();
+                
+
+                if (rowSaved > 0)
                 {
-                    string query = "update tbl_Consumer set FirstName=@fName,LastName=@LName,DOB=@dob,BusinessType=@BusinessType,State=@State,Address=@Address,PhoneNo=@Phone,Gender=@Gender where " +
-                        "Id=@Id";
-                    conn.Open();
-                    SqlCommand cmd = new SqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@fName", txtFirstName.Text);
-                    cmd.Parameters.AddWithValue("@LName", txtLastName.Text);
-                    cmd.Parameters.AddWithValue("@dob", txtDOB.Text);
-                    cmd.Parameters.AddWithValue("@BusinessType", txtBusinessType.Text);
-                    cmd.Parameters.AddWithValue("@State", drpState.SelectedItem.ToString());
-                    cmd.Parameters.AddWithValue("@Address", txtAddress.Text);
+                    lblMessage.Text = "Consumer Record updated Successfully";
 
-                    cmd.Parameters.AddWithValue("@Phone", txtPhone.Text);
-                    cmd.Parameters.AddWithValue("@Gender", rdGender.Text);
-                    cmd.Parameters.AddWithValue("@Id", Id);
-                    int rowSaved = cmd.ExecuteNonQuery();
-                    conn.Close();
-                    if (rowSaved > 0)
-                    {
-                        lblMessage.Text = "Consumer Record updated Successfully";
-
-                        txtFirstName.Text = "";
-                        txtLastName.Text = "";
-                        txtDOB.Text = "";
-                        txtBusinessType.Text = "";
-                        drpState.Text = "";
-                        txtAddress.Text = "";
-                        txtPhone.Text = "";
-                        rdGender.Text = "";
-                    }
-                    else
-                    {
-                        lblMessage.Text = "Error while Updating Your Record";
-                    }
-
+                    txtFirstName.Text = "";
+                    txtLastName.Text = "";
+                    txtDOB.Text = "";
+                    txtBusinessType.Text = "";
+                    drpState.Text = "";
+                    txtAddress.Text = "";
+                    txtPhone.Text = "";
+                    rdGender.Text = "";
                 }
+                else
+                {
+                    lblMessage.Text = "Error while Updating Your Record";
+                }
+
             }
             catch (Exception)
             {
 
-                throw;
+               
             }
         }
 
@@ -148,39 +139,34 @@ namespace DecagonConsumerPortal
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                int newId = Convert.ToInt32(Id);
+                var getRecord = decagonDbEntities.tbl_Consumer.Where(o => o.Id == newId).FirstOrDefault();
+                decagonDbEntities.tbl_Consumer.Remove(getRecord);
+
+                int rowSaved= decagonDbEntities.SaveChanges();
+
+                if (rowSaved > 0)
                 {
-                    string query = "delete tbl_Consumer where Id=@Id";
-                    conn.Open();
-                    SqlCommand cmd = new SqlCommand(query, conn);
-                    
-                    cmd.Parameters.AddWithValue("@Id", Id);
-                    int rowSaved = cmd.ExecuteNonQuery();
-                    conn.Close();
-                    if (rowSaved > 0)
-                    {
-                        lblMessage.Text = "Consumer Record Deleted Successfully";
+                    lblMessage.Text = "Consumer Record Deleted Successfully";
 
-                        txtFirstName.Text = "";
-                        txtLastName.Text = "";
-                        txtDOB.Text = "";
-                        txtBusinessType.Text = "";
-                        drpState.Text = "";
-                        txtAddress.Text = "";
-                        txtPhone.Text = "";
-                        rdGender.Text = "";
-                    }
-                    else
-                    {
-                        lblMessage.Text = "Error while deleting Your Record";
-                    }
-
+                    txtFirstName.Text = "";
+                    txtLastName.Text = "";
+                    txtDOB.Text = "";
+                    txtBusinessType.Text = "";
+                    drpState.Text = "";
+                    txtAddress.Text = "";
+                    txtPhone.Text = "";
+                    rdGender.Text = "";
+                }
+                else
+                {
+                    lblMessage.Text = "Error while deleting Your Record";
                 }
             }
             catch (Exception)
             {
 
-                throw;
+            
             }
         }
     }
